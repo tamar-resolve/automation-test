@@ -1,265 +1,264 @@
 
-  // Extract user data from URL
-  function getHashParams() {
-    const hashParams = {};
-    const hash = window.location.hash.substr(1);
-    const paramString = hash.indexOf('?') >= 0 ? hash.substr(hash.indexOf('?')+1) : '';
-    const params = paramString.split('&');
-    
-    for (let i = 0; i < params.length; i++) {
-      if (!params[i]) continue;
-      const pair = params[i].split('=');
-      if (pair.length < 2) continue;
-      hashParams[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
-    }
-    return hashParams;
-  }
-  
-  // Store parameters in a global variable for React to access
-  window.userDataFromUrl = getHashParams();
-  console.log('URL parameters extracted before React loads:', window.userDataFromUrl);
-  
-  // Immediately store in localStorage
-  try {
-    if (window.userDataFromUrl.email) {
-      localStorage.setItem('userEmail', window.userDataFromUrl.email);
-      console.log('Email stored in localStorage:', window.userDataFromUrl.email);
-    }
-    if (window.userDataFromUrl.company) {
-      localStorage.setItem('companyName', window.userDataFromUrl.company);
-      console.log('Company stored in localStorage:', window.userDataFromUrl.company);
-    }
-    if (window.userDataFromUrl.uid) {
-      localStorage.setItem('userId', window.userDataFromUrl.uid);
-      console.log('User ID stored in localStorage:', window.userDataFromUrl.uid);
-    }
-  } catch (e) {
-    console.error('Error storing in localStorage:', e);
-  }
-
-// This script should be added to your GitHub Pages site (ideally at the top of your main HTML file)
-// Extract and store URL parameters before React loads
+// Auto-fill form script with extensive logging
 (function() {
-  // Extract user data from URL hash
-  function getHashParams() {
-    const hashParams = {};
-    const hash = window.location.hash.substr(1);
-    const paramString = hash.indexOf('?') >= 0 ? hash.substr(hash.indexOf('?')+1) : '';
-    const params = paramString.split('&');
+  console.log('==========================================');
+  console.log('AUTO-FILL SCRIPT STARTING - ' + new Date().toISOString());
+  console.log('Current URL:', window.location.href);
+  console.log('Current hash:', window.location.hash);
+  
+  // Parse URL parameters from hash
+  function getUrlParams() {
+    const hash = window.location.hash || '';
+    console.log('Processing hash string:', hash);
     
-    for (let i = 0; i < params.length; i++) {
-      if (!params[i]) continue;
-      const pair = params[i].split('=');
-      if (pair.length < 2) continue;
-      hashParams[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
-    }
-    return hashParams;
+    const paramString = hash.includes('?') ? hash.substring(hash.indexOf('?') + 1) : '';
+    console.log('Extracted parameter string:', paramString);
+    
+    const searchParams = new URLSearchParams(paramString);
+    
+    const params = {
+      email: searchParams.get('email') || '',
+      company: searchParams.get('company') || '',
+      uid: searchParams.get('uid') || ''
+    };
+    
+    console.log('Parsed URL parameters:', JSON.stringify(params));
+    return params;
   }
   
-  // Store parameters in a global variable and localStorage
-  const urlParams = getHashParams();
-  window.urlParams = urlParams;
-  console.log('URL parameters extracted before React loads:', urlParams);
+  // Get parameters
+  const params = getUrlParams();
   
-  // Store in localStorage for React to access later
+  // Store in localStorage for backup
   try {
-    if (urlParams.email) {
-      localStorage.setItem('userEmail', urlParams.email);
-      console.log('Email stored in localStorage:', urlParams.email);
+    console.log('Attempting to store parameters in localStorage');
+    
+    if (params.email) {
+      localStorage.setItem('userEmail', params.email);
+      console.log('Stored email in localStorage:', params.email);
+    } else {
+      console.log('No email to store in localStorage');
     }
-    if (urlParams.company) {
-      localStorage.setItem('companyName', urlParams.company);
-      console.log('Company stored in localStorage:', urlParams.company);
+    
+    if (params.company) {
+      localStorage.setItem('companyName', params.company);
+      console.log('Stored company in localStorage:', params.company);
+    } else {
+      console.log('No company to store in localStorage');
     }
-    if (urlParams.uid) {
-      localStorage.setItem('userId', urlParams.uid);
-      console.log('User ID stored in localStorage:', urlParams.uid);
+    
+    if (params.uid) {
+      localStorage.setItem('userId', params.uid);
+      console.log('Stored userId in localStorage:', params.uid);
+    } else {
+      console.log('No userId to store in localStorage');
     }
+    
+    // Also check if we can retrieve from localStorage
+    console.log('Verification - Reading from localStorage:');
+    console.log('- userEmail:', localStorage.getItem('userEmail'));
+    console.log('- companyName:', localStorage.getItem('companyName'));
+    console.log('- userId:', localStorage.getItem('userId'));
   } catch (e) {
-    console.error('Error storing in localStorage:', e);
+    console.error('Error accessing localStorage:', e);
   }
   
-  // Function to populate form fields - we'll run this multiple times
-  function populateFormFields() {
-    console.log('Attempting to populate form fields...');
+  // Function to populate form fields - using exact selectors from your HTML
+  function populateFormFields(attempt) {
+    console.log(`--- ATTEMPT ${attempt} to populate form fields ---`);
     
-    // Check both localStorage and URL parameters for values
-    const email = localStorage.getItem('userEmail') || urlParams.email || '';
-    const company = localStorage.getItem('companyName') || urlParams.company || '';
+    // Check if DOM is ready
+    console.log('Document readyState:', document.readyState);
+    console.log('Body exists:', !!document.body);
     
-    // Target the exact field structure from DownloadSection component
-    // Using multiple selectors to maximize chances of finding the fields
-    const emailSelectors = [
-      'input[name="email"]',
-      'input[type="email"]',
-      'input.form-control[type="email"]',
-      'input[placeholder*="email" i]',
-      '[data-testid="email-input"]',
-      '.form-group input[type="email"]'
-    ];
+    // Log all inputs in the document
+    const allInputs = document.querySelectorAll('input');
+    console.log(`Found ${allInputs.length} total input elements`);
     
-    const companySelectors = [
-      'input[name="companyName"]',
-      'input[placeholder*="company" i]',
-      '[data-testid="company-input"]',
-      '.form-group:first-child input',
-      'input[type="text"]'
-    ];
-    
-    // Helper to try multiple selectors
-    function findElement(selectors) {
-      for (const selector of selectors) {
-        const element = document.querySelector(selector);
-        if (element) return element;
-      }
-      return null;
+    if (allInputs.length > 0) {
+      console.log('All input elements:');
+      allInputs.forEach((input, i) => {
+        console.log(`Input #${i+1}:`);
+        console.log('  type:', input.type);
+        console.log('  name:', input.name);
+        console.log('  placeholder:', input.placeholder);
+        console.log('  value:', input.value);
+        console.log('  className:', input.className);
+      });
     }
     
-    // Find form fields
-    const emailField = findElement(emailSelectors);
-    const companyField = findElement(companySelectors);
+    // Target EXACT selectors for your form fields
+    console.log('Searching for email field...');
+    let emailField = document.querySelector('input[name="email"][type="email"][placeholder="Enter your email address"]');
     
-    // Log what we found
-    console.log('Form population - Found fields:', {
-      emailField: emailField ? emailField.outerHTML.substring(0, 50) + '...' : null,
-      companyField: companyField ? companyField.outerHTML.substring(0, 50) + '...' : null,
-      email,
-      company
+    console.log('Searching for company field...');
+    let companyField = document.querySelector('input[name="companyName"][type="text"][placeholder="Enter your company name"]');
+    
+    // Alternative selectors if exact match fails
+    if (!emailField) {
+      console.log('Exact email selector failed, trying alternatives...');
+      emailField = document.querySelector('input[name="email"]') ||
+                  document.querySelector('input[type="email"]') ||
+                  document.querySelector('input[placeholder*="email" i]');
+    }
+    
+    if (!companyField) {
+      console.log('Exact company selector failed, trying alternatives...');
+      companyField = document.querySelector('input[name="companyName"]') ||
+                     document.querySelector('input[placeholder*="company" i]');
+    }
+    
+    console.log('Form fields found:', {
+      emailField: emailField ? {
+        type: emailField.type,
+        name: emailField.name,
+        placeholder: emailField.placeholder,
+        value: emailField.value
+      } : null,
+      companyField: companyField ? {
+        type: companyField.type,
+        name: companyField.name,
+        placeholder: companyField.placeholder,
+        value: companyField.value
+      } : null
     });
     
-    // Set fields if found
-    if (emailField && email) {
-      emailField.value = email;
-      
-      // Trigger events to notify React
-      emailField.dispatchEvent(new Event('input', { bubbles: true }));
-      emailField.dispatchEvent(new Event('change', { bubbles: true }));
-      
-      // Try to target React internals directly
-      const reactKey = Object.keys(emailField).find(key => key.startsWith('__reactProps$'));
-      if (reactKey && emailField[reactKey].onChange) {
-        try {
-          const fakeEvent = { target: emailField };
-          emailField[reactKey].onChange(fakeEvent);
-          console.log('Triggered React onChange handler for email');
-        } catch (e) {
-          console.error('Error triggering React onChange:', e);
-        }
-      }
-      
-      console.log('Email field populated with:', email);
-    } else {
-      console.log('Email field not found or no email value');
-    }
-    
-    if (companyField && company) {
-      companyField.value = company;
-      
-      // Trigger events to notify React
-      companyField.dispatchEvent(new Event('input', { bubbles: true }));
-      companyField.dispatchEvent(new Event('change', { bubbles: true }));
-      
-      // Try to target React internals directly
-      const reactKey = Object.keys(companyField).find(key => key.startsWith('__reactProps$'));
-      if (reactKey && companyField[reactKey].onChange) {
-        try {
-          const fakeEvent = { target: companyField };
-          companyField[reactKey].onChange(fakeEvent);
-          console.log('Triggered React onChange handler for company');
-        } catch (e) {
-          console.error('Error triggering React onChange:', e);
-        }
-      }
-      
-      console.log('Company field populated with:', company);
-    } else {
-      console.log('Company field not found or no company value');
-    }
-  }
-  
-  // Add a MutationObserver to detect when form fields are added to DOM
-  function setupMutationObserver() {
-    // This will run once the document is ready
-    const observer = new MutationObserver(function(mutations) {
-      // Check if any new nodes match our target selectors
-      let shouldPopulate = false;
-      
-      mutations.forEach(function(mutation) {
-        if (mutation.addedNodes && mutation.addedNodes.length > 0) {
-          for (let i = 0; i < mutation.addedNodes.length; i++) {
-            const node = mutation.addedNodes[i];
-            // Check if this is an Element
-            if (node.nodeType === 1) {
-              // Check if it's a form control or contains one
-              if (node.tagName === 'INPUT' || 
-                  node.querySelector('input') ||
-                  node.classList.contains('form-group') ||
-                  node.classList.contains('form-control')) {
-                shouldPopulate = true;
-                break;
-              }
-            }
+    // If we couldn't find fields and we're running in an iframe, try to find the iframe content
+    if ((!emailField || !companyField) && window.frameElement) {
+      console.log('Running in iframe, attempting to navigate iframe DOM');
+      try {
+        // Try to get iframe's document
+        const frameDoc = window.frameElement.contentDocument || window.frameElement.contentWindow.document;
+        console.log('Found iframe document:', !!frameDoc);
+        
+        if (frameDoc) {
+          if (!emailField) {
+            emailField = frameDoc.querySelector('input[name="email"]');
+            console.log('Email field from iframe:', !!emailField);
+          }
+          
+          if (!companyField) {
+            companyField = frameDoc.querySelector('input[name="companyName"]');
+            console.log('Company field from iframe:', !!companyField);
           }
         }
-      });
-      
-      if (shouldPopulate) {
-        console.log('New form fields detected in DOM, attempting to populate');
-        populateFormFields();
+      } catch (e) {
+        console.error('Error accessing iframe content:', e);
       }
-    });
-    
-    // Start observing the entire document
-    observer.observe(document.documentElement, {
-      childList: true,
-      subtree: true
-    });
-    
-    console.log('MutationObserver set up to watch for form fields');
-  }
-  
-  // Schedule population attempts with increasing delays
-  // This covers a variety of React rendering scenarios
-  const populationAttempts = [
-    0,      // Immediate attempt
-    100,    // After 100ms
-    500,    // After 500ms
-    1000,   // After 1 second
-    2000,   // After 2 seconds
-    5000    // After 5 seconds
-  ];
-  
-  // Schedule our attempts
-  populationAttempts.forEach(delay => {
-    setTimeout(populateFormFields, delay);
-  });
-  
-  // Set up the MutationObserver once the document is loaded
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupMutationObserver);
-  } else {
-    setupMutationObserver();
-  }
-  
-  // Listen for postMessage events from parent frame
-  window.addEventListener('message', (event) => {
-    // Verify origin for security if needed
-    // if (event.origin !== 'https://your-trusted-domain.com') return;
-    
-    try {
-      if (event.data && event.data.type === 'USER_DATA') {
-        console.log("Received user data via postMessage:", event.data);
-        
-        // Store in localStorage
-        if (event.data.email) localStorage.setItem('userEmail', event.data.email);
-        if (event.data.companyName) localStorage.setItem('companyName', event.data.companyName);
-        if (event.data.userId) localStorage.setItem('userId', event.data.userId);
-        
-        // Try to populate form fields immediately
-        populateFormFields();
-      }
-    } catch (error) {
-      console.error("Error processing postMessage data:", error);
     }
+    
+    // Get data from multiple sources (URL params first, localStorage as fallback)
+    const emailValue = params.email || localStorage.getItem('userEmail') || '';
+    const companyValue = params.company || localStorage.getItem('companyName') || '';
+    
+    console.log('Values to populate:');
+    console.log('- Email:', emailValue);
+    console.log('- Company:', companyValue);
+    
+    // Populate email field if found
+    if (emailField && emailValue) {
+      console.log('Setting email field value to:', emailValue);
+      
+      // Store original value to check if it changed
+      const originalValue = emailField.value;
+      
+      // Set value
+      emailField.value = emailValue;
+      
+      // Log if value was set
+      console.log('Email field value after setting:', emailField.value);
+      console.log('Value changed?', originalValue !== emailField.value);
+      
+      // Trigger events
+      console.log('Dispatching input event for email field');
+      emailField.dispatchEvent(new Event('input', { bubbles: true }));
+      
+      console.log('Dispatching change event for email field');
+      emailField.dispatchEvent(new Event('change', { bubbles: true }));
+      
+      console.log('Dispatching blur event for email field');
+      emailField.dispatchEvent(new Event('blur', { bubbles: true }));
+      
+      // Set background color
+      console.log('Setting email field background color');
+      emailField.style.backgroundColor = 'rgb(240, 255, 255)';
+      
+      console.log('Email field population complete');
+    } else {
+      console.log('Could not populate email field:', !emailField ? 'field not found' : 'no value to set');
+    }
+    
+    // Populate company field if found
+    if (companyField && companyValue) {
+      console.log('Setting company field value to:', companyValue);
+      
+      // Store original value to check if it changed
+      const originalValue = companyField.value;
+      
+      // Set value
+      companyField.value = companyValue;
+      
+      // Log if value was set
+      console.log('Company field value after setting:', companyField.value);
+      console.log('Value changed?', originalValue !== companyField.value);
+      
+      // Trigger events
+      console.log('Dispatching input event for company field');
+      companyField.dispatchEvent(new Event('input', { bubbles: true }));
+      
+      console.log('Dispatching change event for company field');
+      companyField.dispatchEvent(new Event('change', { bubbles: true }));
+      
+      console.log('Dispatching blur event for company field');
+      companyField.dispatchEvent(new Event('blur', { bubbles: true }));
+      
+      // Set background color
+      console.log('Setting company field background color');
+      companyField.style.backgroundColor = 'rgb(240, 255, 255)';
+      
+      console.log('Company field population complete');
+    } else {
+      console.log('Could not populate company field:', !companyField ? 'field not found' : 'no value to set');
+    }
+    
+    console.log(`--- END ATTEMPT ${attempt} ---`);
+  }
+  
+  // Try with multiple delays to catch the form after it's rendered
+  const attempts = [100, 500, 1000, 2000, 3000, 5000];
+  
+  console.log(`Scheduling ${attempts.length} attempts to populate fields`);
+  attempts.forEach((delay, index) => {
+    console.log(`Scheduled attempt ${index+1} after ${delay}ms`);
+    setTimeout(() => populateFormFields(index + 1), delay);
   });
+  
+  // Also try when user interacts with page
+  let hasInteracted = false;
+  function onInteraction(event) {
+    console.log(`User interaction detected: ${event.type}`);
+    
+    if (!hasInteracted) {
+      hasInteracted = true;
+      console.log('First user interaction, attempting to populate fields');
+      
+      populateFormFields('user-interaction');
+      
+      // Remove all event listeners
+      console.log('Removing interaction event listeners');
+      ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(event => {
+        document.removeEventListener(event, onInteraction);
+      });
+    }
+  }
+  
+  // Add interaction listeners
+  console.log('Adding user interaction event listeners');
+  ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(event => {
+    document.addEventListener(event, onInteraction);
+    console.log(`Added listener for ${event} events`);
+  });
+  
+  console.log('AUTO-FILL SCRIPT INITIALIZATION COMPLETE');
+  console.log('==========================================');
 })();
